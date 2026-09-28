@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
 from .config import settings
 from .controllers import HueController, GoveeController
 from .models import DeviceState, LightCommand, RGB, SceneRequest, SystemState
 from .scenes import apply_scene
 
-app = FastAPI(title="PorchLight Controller", version="0.1.0")
+app = FastAPI(title="PorchLight Controller", version="0.2.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,6 +23,9 @@ app.add_middleware(
 hue = HueController()
 govee = GoveeController()
 _current_mode = "normal"
+
+ROOT = Path(__file__).resolve().parents[2]
+WEB_DIR = ROOT / "web"
 
 
 def auth(authorization: str | None):
@@ -96,3 +104,12 @@ async def control_device(device_id: str, cmd: LightCommand, authorization: str |
 async def govee_discover(authorization: str | None = Header(default=None)):
     auth(authorization)
     return await govee.discover()
+
+
+@app.get("/")
+async def web_index():
+    return FileResponse(WEB_DIR / "index.html")
+
+
+if WEB_DIR.exists():
+    app.mount("/", StaticFiles(directory=WEB_DIR, html=True), name="web")
