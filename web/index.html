@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#101114" />
+  <title>PorchLight</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#0d0e11;
+      --card:#17191f;
+      --card2:#1f222a;
+      --text:#f6f7fb;
+      --muted:#9ba2b1;
+      --line:#2a2f39;
+      --accent:#f4c76b;
+      --good:#49d17d;
+      --danger:#ff6b6b;
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:
+        radial-gradient(circle at top right, rgba(255,196,87,.12), transparent 30%),
+        linear-gradient(180deg,#0d0e11,#101216 50%,#0d0e11);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      min-height:100vh;
+    }
+    button,input{font:inherit}
+    .shell{max-width:760px;margin:0 auto;padding:18px 16px 110px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
+    .brand h1{margin:0;font-size:30px;letter-spacing:-.7px}
+    .brand p{margin:4px 0 0;color:var(--muted);font-size:14px}
+    .pill{padding:8px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px;background:rgba(255,255,255,.03)}
+    .hero{
+      padding:18px;border:1px solid var(--line);border-radius:var(--radius);
+      background:linear-gradient(135deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+      margin-bottom:16px;
+    }
+    .hero button{width:100%;border:0;border-radius:18px;padding:16px 18px;background:#f7f7f7;color:#111;font-weight:700;text-align:left}
+    .hero small{display:block;margin-top:4px;font-weight:500;color:#555}
+    .section-title{display:flex;justify-content:space-between;align-items:center;margin:22px 2px 10px}
+    .section-title h2{font-size:17px;margin:0}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .scene{
+      min-height:128px;border:1px solid var(--line);border-radius:20px;padding:16px;text-align:left;
+      color:var(--text);background:var(--card);display:flex;flex-direction:column;justify-content:space-between;
+    }
+    .scene.active{outline:2px solid var(--accent);border-color:transparent}
+    .scene .emoji{font-size:28px}
+    .scene strong{display:block;font-size:17px;margin-top:16px}
+    .scene small{display:block;color:var(--muted);margin-top:4px}
+    .list{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:var(--card)}
+    .device{display:grid;grid-template-columns:1fr auto;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);align-items:center}
+    .device:last-child{border-bottom:0}
+    .device h3{font-size:15px;margin:0}
+    .device p{font-size:12px;color:var(--muted);margin:4px 0 0}
+    .switch{width:52px;height:30px;border-radius:999px;border:0;background:#343944;position:relative}
+    .switch::after{content:"";width:24px;height:24px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:.18s}
+    .switch.on{background:var(--good)}
+    .switch.on::after{left:25px}
+    .device-controls{grid-column:1/-1;display:none;padding-top:2px}
+    .device.open .device-controls{display:block}
+    .slider-row{display:grid;grid-template-columns:90px 1fr 44px;align-items:center;gap:8px;margin:10px 0}
+    input[type=range]{width:100%}
+    .colors{display:flex;gap:10px;margin-top:12px}
+    .dot{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.25)}
+    .rowbtn{border:0;background:none;color:var(--text);padding:0;text-align:left;width:100%}
+    .settings{border:1px solid var(--line);border-radius:20px;padding:16px;background:var(--card)}
+    label{font-size:12px;color:var(--muted);display:block;margin:12px 0 6px}
+    input[type=text],input[type=password]{
+      width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:#101216;color:var(--text)
+    }
+    .settings-actions{display:flex;gap:10px;margin-top:14px}
+    .btn{border:0;border-radius:14px;padding:12px 14px;font-weight:700}
+    .btn.primary{background:#f7f7f7;color:#111}
+    .btn.secondary{background:#292e37;color:white}
+    .notice{font-size:12px;color:var(--muted);line-height:1.45;margin-top:12px}
+    .status{margin:14px 0;padding:12px 14px;border-radius:14px;background:#15181d;border:1px solid var(--line);font-size:13px;color:var(--muted)}
+    .tabs{
+      position:fixed;left:50%;transform:translateX(-50%);bottom:14px;width:min(720px,calc(100% - 24px));
+      display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px;
+      background:rgba(24,26,32,.92);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:20px;
+    }
+    .tab{border:0;background:transparent;color:var(--muted);padding:11px 8px;border-radius:14px;font-weight:700}
+    .tab.active{background:#2a2f38;color:white}
+    .panel{display:none}.panel.active{display:block}
+    @media (max-width:420px){.grid{grid-template-columns:1fr 1fr}.scene{min-height:118px;padding:14px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <h1>PorchLight</h1>
+        <p>Hue + Govee front porch</p>
+      </div>
+      <div id="modePill" class="pill">DEMO MODE</div>
+    </div>
+
+    <section id="scenesPanel" class="panel active">
+      <div class="hero">
+        <button data-scene="normal">
+          🏠 Normal
+          <small>A19s on · Lilys off · C9 off</small>
+        </button>
+      </div>
+
+      <div class="section-title"><h2>Scenes</h2><span id="sceneStatus" class="pill">Normal</span></div>
+      <div class="grid">
+        <button class="scene" data-scene="christmas"><span class="emoji">🎄</span><div><strong>Christmas</strong><small>Holiday red + green</small></div></button>
+        <button class="scene" data-scene="halloween"><span class="emoji">🎃</span><div><strong>Halloween</strong><small>Orange + purple</small></div></button>
+        <button class="scene" data-scene="warm_white"><span class="emoji">✨</span><div><strong>Warm White</strong><small>Soft warm porch</small></div></button>
+        <button class="scene" data-scene="new_years"><span class="emoji">🥂</span><div><strong>New Year's</strong><small>Gold + white</small></div></button>
+        <button class="scene" data-scene="c9_off"><span class="emoji">💡</span><div><strong>C9 Off</strong><small>Hue stays unchanged</small></div></button>
+        <button class="scene" data-scene="all_off"><span class="emoji">⏻</span><div><strong>All Off</strong><small>Everything off</small></div></button>
+      </div>
+      <div id="scenesMessage" class="status">Demo mode is on. Tap any scene to preview how PorchLight will behave.</div>
+    </section>
+
+    <section id="lightsPanel" class="panel">
+      <div class="section-title"><h2>Individual Lights</h2><span class="pill">9 devices</span></div>
+      <div id="deviceList" class="list"></div>
+    </section>
+
+    <section id="settingsPanel" class="panel">
+      <div class="section-title"><h2>Settings</h2></div>
+      <div class="settings">
+        <label>Controller address</label>
+        <input id="controllerUrl" type="text" value="http://porchlight.local:8787" />
+        <label>Access token</label>
+        <input id="controllerToken" type="password" placeholder="Paste controller token later" />
+
+        <label style="display:flex;align-items:center;gap:10px;margin-top:18px;color:white">
+          <input id="demoToggle" type="checkbox" checked />
+          Demo mode
+        </label>
+
+        <div class="settings-actions">
+          <button id="saveSettings" class="btn primary">Save</button>
+          <button id="testConnection" class="btn secondary">Test</button>
+        </div>
+
+        <div id="settingsStatus" class="status">Demo mode lets you use the full interface before the Raspberry Pi is connected.</div>
+
+        <p class="notice">
+          Final setup: this same web app will live on the Raspberry Pi, so your iPhone can open it at
+          <strong>porchlight.local</strong>. You can then use “Add to Home Screen” in Safari and it behaves much like an app.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="scenesPanel">Scenes</button>
+    <button class="tab" data-tab="lightsPanel">Lights</button>
+    <button class="tab" data-tab="settingsPanel">Settings</button>
+  </nav>
+
+<script>
+const defaultDevices = [
+  ...Array.from({length:4},(_,i)=>({id:`a19-${i+1}`,name:`A19 ${i+1}`,family:"hue_a19",on:true,brightness:75})),
+  ...Array.from({length:4},(_,i)=>({id:`lily-${i+1}`,name:`Lily ${i+1}`,family:"hue_lily",on:false,brightness:70})),
+  {id:"c9-front",name:"Front Porch C9",family:"govee_c9",on:false,brightness:100}
+];
+
+const app = {
+  demo: JSON.parse(localStorage.getItem("pl_demo") ?? "true"),
+  url: localStorage.getItem("pl_url") || "http://porchlight.local:8787",
+  token: localStorage.getItem("pl_token") || "",
+  mode: localStorage.getItem("pl_mode") || "normal",
+  devices: JSON.parse(localStorage.getItem("pl_devices") || "null") || structuredClone(defaultDevices)
+};
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+function familyLabel(f){return f==="hue_a19"?"Hue A19":f==="hue_lily"?"Hue Lily":"Govee H6860 C9"}
+
+function saveLocal(){
+  localStorage.setItem("pl_mode", app.mode);
+  localStorage.setItem("pl_devices", JSON.stringify(app.devices));
+}
+
+function sceneToDemo(scene){
+  const a19 = app.devices.filter(d=>d.family==="hue_a19");
+  const lily = app.devices.filter(d=>d.family==="hue_lily");
+  const c9 = app.devices.filter(d=>d.family==="govee_c9");
+
+  const all = (arr,on,brightness)=>arr.forEach(d=>{d.on=on;if(brightness)d.brightness=brightness});
+
+  if(scene==="normal"){ all(a19,true,75); all(lily,false); all(c9,false); }
+  if(scene==="all_off"){ all(app.devices,false); }
+  if(scene==="c9_off"){ all(c9,false); }
+  if(scene==="christmas"){ all(a19,true,65); all(lily,true,75); all(c9,true,100); }
+  if(scene==="halloween"){ all(a19,true,55); all(lily,true,70); all(c9,true,100); }
+  if(scene==="warm_white"){ all(a19,true,75); all(lily,true,45); all(c9,true,55); }
+  if(scene==="new_years"){ all(a19,true,80); all(lily,true,80); all(c9,true,100); }
+
+  app.mode = scene;
+  saveLocal();
+  render();
+}
+
+async function api(path, options={}){
+  const headers = {"Content-Type":"application/json", ...(options.headers||{})};
+  if(app.token) headers["Authorization"] = `Bearer ${app.token}`;
+  const res = await fetch(app.url.replace(/\/$/,"")+path,{...options,headers});
+  if(!res.ok) throw new Error("Controller error");
+  const type = res.headers.get("content-type")||"";
+  return type.includes("application/json") ? res.json() : null;
+}
+
+async function activateScene(scene){
+  $("#scenesMessage").textContent = "Sending scene…";
+  try{
+    if(app.demo){ sceneToDemo(scene); $("#scenesMessage").textContent = "Demo scene applied."; return; }
+    await api("/api/scenes",{method:"POST",body:JSON.stringify({scene})});
+    app.mode = scene;
+    await refreshState();
+    $("#scenesMessage").textContent = "Scene applied.";
+  }catch(e){
+    $("#scenesMessage").textContent = "Could not reach the porch controller.";
+  }
+}
+
+async function refreshState(){
+  if(app.demo){render();return}
+  const state = await api("/api/state");
+  app.devices = state.devices;
+  app.mode = state.mode;
+  render();
+}
+
+async function setDevice(device,on){
+  try{
+    if(app.demo){
+      device.on=on; saveLocal(); render(); return;
+    }
+    await api(`/api/devices/${device.id}`,{method:"POST",body:JSON.stringify({on})});
+    await refreshState();
+  }catch(e){ alert("Could not reach the porch controller."); }
+}
+
+async function setBrightness(device,value){
+  try{
+    if(app.demo){
+      device.on=true; device.brightness=Number(value); saveLocal(); render(); return;
+    }
+    await api(`/api/devices/${device.id}`,{method:"POST",body:JSON.stringify({on:true,brightness:Number(value)})});
+    await refreshState();
+  }catch(e){ alert("Could not reach the porch controller."); }
+}
+
+function renderDevices(){
+  const list = $("#deviceList");
+  list.innerHTML = "";
+  app.devices.forEach(device=>{
+    const el = document.createElement("div");
+    el.className="device";
+    el.innerHTML=`
+      <button class="rowbtn">
+        <h3>${device.name}</h3>
+        <p>${familyLabel(device.family)} · ${device.on?"On":"Off"} · ${device.brightness}%</p>
+      </button>
+      <button class="switch ${device.on?"on":""}" aria-label="Power"></button>
+      <div class="device-controls">
+        <div class="slider-row">
+          <span>Brightness</span>
+          <input type="range" min="1" max="100" value="${device.brightness}">
+          <span>${device.brightness}%</span>
+        </div>
+      </div>`;
+    el.querySelector(".rowbtn").onclick=()=>el.classList.toggle("open");
+    el.querySelector(".switch").onclick=()=>setDevice(device,!device.on);
+    const slider=el.querySelector("input[type=range]");
+    slider.oninput=e=>e.target.parentElement.lastElementChild.textContent=`${e.target.value}%`;
+    slider.onchange=e=>setBrightness(device,e.target.value);
+    list.appendChild(el);
+  });
+}
+
+function render(){
+  $("#modePill").textContent = app.demo ? "DEMO MODE" : "LIVE";
+  $("#sceneStatus").textContent = app.mode.replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase());
+  $$(".scene").forEach(b=>b.classList.toggle("active",b.dataset.scene===app.mode));
+  $("#controllerUrl").value=app.url;
+  $("#controllerToken").value=app.token;
+  $("#demoToggle").checked=app.demo;
+  renderDevices();
+}
+
+$$("[data-scene]").forEach(b=>b.onclick=()=>activateScene(b.dataset.scene));
+
+$$(".tab").forEach(b=>b.onclick=()=>{
+  $$(".tab").forEach(x=>x.classList.remove("active"));
+  $$(".panel").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  $("#"+b.dataset.tab).classList.add("active");
+});
+
+$("#saveSettings").onclick=()=>{
+  app.url=$("#controllerUrl").value.trim();
+  app.token=$("#controllerToken").value.trim();
+  app.demo=$("#demoToggle").checked;
+  localStorage.setItem("pl_url",app.url);
+  localStorage.setItem("pl_token",app.token);
+  localStorage.setItem("pl_demo",JSON.stringify(app.demo));
+  $("#settingsStatus").textContent="Settings saved.";
+  render();
+};
+
+$("#testConnection").onclick=async()=>{
+  $("#settingsStatus").textContent="Testing…";
+  if($("#demoToggle").checked){$("#settingsStatus").textContent="Demo mode is active. No controller connection is needed.";return;}
+  app.url=$("#controllerUrl").value.trim();
+  app.token=$("#controllerToken").value.trim();
+  try{
+    const h=await api("/health");
+    $("#settingsStatus").textContent=`Connected · PorchLight controller v${h.version||"1"}`;
+  }catch(e){
+    $("#settingsStatus").textContent="Could not connect.";
+  }
+};
+
+if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
+render();
+</script>
+</body>
+</html>
