@@ -1,0 +1,9 @@
+{
+  "name": "PorchLight",
+  "short_name": "PorchLight",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d0e11",
+  "theme_color": "#101114",
+  "description": "Unified Hue and Govee front porch lighting control."
+}
